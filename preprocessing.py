@@ -1,9 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-print(" Starting Data Preprocessing for Indoor Plant Dataset...\n")
-
-#  Load dataset
 file_path = "Indoor_Plant_Health_and_Growth_Factors.csv"
 df = pd.read_csv(file_path)
 print(" Dataset Loaded Successfully!")
@@ -46,5 +43,4 @@ output_path = "Cleaned_Indoor_Plant_Data.csv"
 df.to_csv(output_path, index=False)
 print(f"\n Cleaned dataset saved as: {output_path}")
 
-#  Summary
 print(f"\n Shape after cleaning: {df.shape}")
