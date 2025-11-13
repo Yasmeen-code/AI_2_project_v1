@@ -14,20 +14,39 @@ class PlantController extends Controller
 
     public function predict(Request $request)
     {
-        $response = Http::post('http://127.0.0.1:5000/predict', [
-            'temp' => $request->temp,
-            'humidity' => $request->humidity,
-            'watering' => $request->watering,
-            'soil_moisture' => $request->soil_moisture,
-        ]);
+        try {
+            // 🔹 إرسال البيانات إلى Flask API
+            $response = Http::post('http://127.0.0.1:5000/predict', [
+                'temp' => $request->temp,
+                'humidity' => $request->humidity,
+                'watering' => $request->watering,
+                'soil_moisture' => $request->soil_moisture,
+            ]);
 
-        $data = $response->json();
+            // 🔹 تحويل الـ response إلى JSON
+            $data = $response->json();
 
-        $result = [
-            'status' => $data['health_status'] == 1 ? '✅ Plant is Healthy!' : '❌ Unhealthy Plant!',
-            'advice' => $data['advice']
-        ];
+            // ✅ التحقق إن الرد فعلاً جاي من Flask
+            if (!$response->successful() || !$data || !isset($data['message'])) {
+                return redirect('/')->with('result', [
+                    'status' => '⚠️ Error: Could not get response from AI model.',
+                    'advice' => 'Please make sure your AI server is running on port 5000.'
+                ]);
+            }
 
-        return redirect('/')->with('result', $result);
+            // 🔹 النتيجة النهائية
+            $result = [
+                'status' => $data['message'] ?? '⚠️ Unknown result',
+                'advice' => $data['advice'] ?? 'No advice available'
+            ];
+
+            return redirect('/')->with('result', $result);
+        } catch (\Exception $e) {
+            // 🔥 في حالة حدوث خطأ بالاتصال أو السيرفر
+            return redirect('/')->with('result', [
+                'status' => '❌ Server Error!',
+                'advice' => $e->getMessage()
+            ]);
+        }
     }
 }
